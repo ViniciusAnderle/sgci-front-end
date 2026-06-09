@@ -1,10 +1,10 @@
 <template>
     <div>
-        <q-form greedy ref="formPessoa" @submit="cadastrar" class="bg">
+        <q-form greedy ref="formPessoa" @submit="cadastrarOuAtualizar" class="bg">
             <div class="bg"></div>
             <div class="main-container">
                 <div class="q-mb-md">
-                    <h4 class="title">Cadastrar Pessoa</h4>
+                    <h4 class="title">{{ pessoa.id ? 'Editar' : 'Cadastrar' }} Pessoa</h4>
                     <div class="divisor-inline"></div>
                 </div>
 
@@ -13,9 +13,7 @@
                     <div class="row q-col-gutter-lg">
                         <div class="col-7">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.nome"
                                 label="Nome"
                                 dense
@@ -23,9 +21,7 @@
                         </div>
                         <div class="col-2">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.documento"
                                 label="Documento"
                                 dense
@@ -33,9 +29,7 @@
                         </div>
                         <div class="col-3">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.profissao"
                                 label="Profissão"
                                 dense
@@ -44,7 +38,16 @@
                     </div>
                     <div class="row q-col-gutter-lg" style="margin-top: -15px">
                         <div class="col-7">
-                            <q-field dense label="Tipo de Pessoa" lazy-rules borderless stack-label>
+                            <q-field
+                                ref="tipoPessoa"
+                                :rules="[vRequired]"
+                                dense
+                                :model-value="pessoa.tipo"
+                                label="Tipo de Pessoa"
+                                lazy-rules
+                                borderless
+                                stack-label
+                            >
                                 <q-option-group
                                     v-model="pessoa.tipo"
                                     :options="optionsTipoPessoa"
@@ -55,7 +58,16 @@
                             </q-field>
                         </div>
                         <div class="col-5">
-                            <q-field dense label="Estado Civil" lazy-rules borderless stack-label>
+                            <q-field
+                                ref="estadoCivil"
+                                :rules="[vRequired]"
+                                :model-value="pessoa.estadoCivil"
+                                dense
+                                label="Estado Civil"
+                                lazy-rules
+                                borderless
+                                stack-label
+                            >
                                 <q-option-group
                                     v-model="pessoa.estadoCivil"
                                     :options="optionsEstadoCivil"
@@ -72,9 +84,7 @@
                     <div class="row q-col-gutter-lg">
                         <div class="col-2">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.cep"
                                 label="CEP"
                                 dense
@@ -82,9 +92,7 @@
                         </div>
                         <div class="col-3">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.estado"
                                 label="Estado"
                                 dense
@@ -92,9 +100,7 @@
                         </div>
                         <div class="col-4">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.cidade"
                                 label="Cidade"
                                 dense
@@ -102,9 +108,7 @@
                         </div>
                         <div class="col-3">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.bairro"
                                 label="Bairro"
                                 dense
@@ -112,9 +116,7 @@
                         </div>
                         <div class="col-9">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.rua"
                                 label="Rua"
                                 dense
@@ -123,9 +125,7 @@
 
                         <div class="col-3">
                             <q-input
-                                :rules="[
-                                    (val) => !(val == null || val == '') || 'Campo Obrigatório',
-                                ]"
+                                :rules="[vRequired]"
                                 v-model="pessoa.endereco.numero"
                                 label="Número"
                                 dense
@@ -142,7 +142,12 @@
                             no-caps
                             class="btn-voltar"
                         />
-                        <q-btn type="submit" label="Cadastrar" no-caps class="btn-cadastrar" />
+                        <q-btn
+                            type="submit"
+                            :label="pessoa.id ? 'Salvar' : 'Cadastrar'"
+                            no-caps
+                            class="btn-cadastrar"
+                        />
                     </div>
                 </div>
             </div>
@@ -153,10 +158,12 @@
 <script>
 import { ref } from 'vue'
 import { pessoaService } from 'src/services/sgci-api.service'
+import validators from 'src/validators/validator-set'
 export default {
     name: 'CreateEditPessoa',
     setup() {
         const pessoa = ref({
+            id: null,
             nome: null,
             documento: null,
             profissao: null,
@@ -174,6 +181,7 @@ export default {
         })
 
         return {
+            vRequired: validators.vRequired,
             pessoa,
             optionsTipoPessoa: [
                 {
@@ -201,9 +209,31 @@ export default {
             ],
         }
     },
+    watch: {
+        'pessoa.tipo': {
+            handler() {
+                this.$refs.tipoPessoa.resetValidation()
+            },
+        },
+    },
+    mounted() {
+        this.buscarPessoaParaEdicao()
+    },
     methods: {
-        cadastrar() {
-            pessoaService.create(this.pessoa).then(respose => {
+        buscarPessoaParaEdicao() {
+            if (!this.$route.params.id) return
+            pessoaService.getById(this.$route.params.id).then((retorno) => {
+                this.pessoa = retorno.data
+            })
+            return
+        },
+        cadastrarOuAtualizar() {
+            if (this.pessoa.id) {
+                pessoaService.update(this.pessoa.id, this.pessoa).then(() => {
+                    console.log('Editou a pessoa com sucesso')
+                })
+            }
+            pessoaService.create(this.pessoa).then(() => {
                 console.log('Cadastrou a pessoa com sucesso')
             })
         },

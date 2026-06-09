@@ -1,8 +1,7 @@
 import axios from 'axios'
 
-
 const apiSgci = axios.create({
-    baseURL: import.meta.env.VITE_API_SGCI
+    baseURL: import.meta.env.VITE_API_SGCI,
 })
 
 export class PessoaService {
@@ -10,6 +9,12 @@ export class PessoaService {
 
     create(pessoa) {
         return apiSgci.post(this.path, pessoa)
+    }
+    update(id, pessoa) {
+        return apiSgci.put(this.path + '/' + id, pessoa)
+    }
+    getById(id) {
+        return apiSgci.get(this.path + '/' + id)
     }
 }
 
